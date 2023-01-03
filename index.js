@@ -7,6 +7,6 @@ app.use('/',userRouter)
 
 connect().then(()=>{
     app.listen(3000,()=>{
-        console.log("Listening on http://localhost:3000")
+        console.log("Listening to http://localhost:3000")
     });
 });

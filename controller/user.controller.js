@@ -1,31 +1,31 @@
 const express = require('express');
-// const argon2 = require('argon2');
+const argon2 = require('argon2');
 const { UserModel } = require('../model/user.model');
-// const jwt = require("jsonwebtoken");
-// const token_secret = process.env.TOKEN_KEY;
+const jwt = require("jsonwebtoken");
+const token_secret = process.env.TOKEN_KEY;
 
-// const validateUser = async (data) => {
-//     let {
-//         email,
-//         password
-//     } = data;
-//     try {
-//         let user = await UserModel.findOne({
-//             email
-//         });
-//         if (user) {
-//             if (await argon2.verify(user.password, password)) {
-//                 return user;
-//             } else {
-//                 return false;
-//             }
-//         } else {
-//             return false;
-//         }
-//     } catch (e) {
-//         return false;
-//     }
-// };
+const validateUser = async (data) => {
+    let {
+        email,
+        password
+    } = data;
+    try {
+        let user = await UserModel.findOne({
+            email
+        });
+        if (user) {
+            if (await argon2.verify(user.password, password)) {
+                return user;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    } catch (e) {
+        return false;
+    }
+};
 
 const signupUser = async (req, res) => {
     let {
@@ -43,14 +43,13 @@ const signupUser = async (req, res) => {
             message: "already registerd"
         })
     }
-    // // let hash = await argon2.hash(password)
+    let hash = await argon2.hash(password)
     let user = await UserModel.create({
         firstname: firstname,
         lastname: lastname,
         email: email,
-        password: password
+        password: hash
     })
-    console.log('userdetails',user);
     if (user) {
         return res.send({
             data: user,
@@ -65,37 +64,37 @@ const signupUser = async (req, res) => {
     }
 }
 
-// const loginUser = async (req, res) => {
-//     let {
-//         email,
-//         password
-//     } = req.body;
-//     let user = await validateUser({
-//         email,
-//         password
-//     });
-//     if (user) {
-//         // let token = jwt.sign({
-//         //         userId: user._id,
-//         //         email: user.email,
-//         //         name: user.firstname
-//         //     },
-//         //     token_secret, {
-//         //         expiresIn: "7 days",
-//         //     }
-//         // );
-//         res.status(200).send({
-//             status: true,
-//             token,
-//             message: "Login Successfully"
-//         });
-//     } else {
-//         return res.send({
-//             status: false,
-//             message: "something went wrong"
-//         });
-//     }
-// };
+const loginUser = async (req, res) => {
+    let {
+        email,
+        password
+    } = req.body;
+    let user = await validateUser({
+        email,
+        password
+    });
+    if (user) {
+        let token = jwt.sign({
+                userId: user._id,
+                email: user.email,
+                name: user.firstname
+            },
+            token_secret, {
+                expiresIn: "7 days",
+            }
+        );
+        res.status(200).send({
+            status: true,
+            token,
+            message: "Login Successfully."
+        });
+    } else {
+        return res.send({
+            status: false,
+            message: "Something went wrong."
+        });
+    }
+};
 
 const getUser = async (req, res) => {
     let users = await UserModel.find()
@@ -107,7 +106,7 @@ const getUser = async (req, res) => {
 }
 
 module.exports = {
-    // loginUser,
+    loginUser,
     signupUser,
     getUser
 }
